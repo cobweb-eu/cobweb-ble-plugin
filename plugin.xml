@@ -26,6 +26,7 @@
 
         <source-file src="src/android/COBWEBBLEPlugin.java" target-dir="src/eu/cobwebproject/ucd/ble" />
 		<source-file src="src/android/WaspmoteBLEReader.java" target-dir="src/eu/cobwebproject/ucd/ble" />
-
+		<source-file src="src/android/PluginReceiver.java" target-dir="src/eu/cobwebproject/ucd/ble" />
+		
     </platform>
 </plugin>

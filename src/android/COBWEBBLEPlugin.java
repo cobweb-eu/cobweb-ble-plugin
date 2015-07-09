@@ -12,12 +12,7 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.Intent;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import java.io.File;
-import java.io.IOException;
-import java.util.UUID;
+
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -29,21 +24,18 @@ import android.util.Log;
 public class COBWEBBLEPlugin extends CordovaPlugin {
 
 
+	private static String EMSG="Error connecting to Bluetooth device";
 
 	@Override
 	public boolean execute(String action, JSONArray args,
 			CallbackContext callbackContext) throws JSONException {
-
-		
-
-		
 
 		BluetoothManager bluetoothManager = (BluetoothManager) cordova.getActivity().
 			getSystemService(Context.BLUETOOTH_SERVICE);
 		BluetoothAdapter mBluetoothAdapter = bluetoothManager.getAdapter();
 
 		if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
-			callbackContext.error("Error connecting to Bluetooth device");
+			callbackContext.error(EMSG);
 		}else{
 			PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
 			r.setKeepCallback(true);
