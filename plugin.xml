@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="ie.ucd.cobweb.cordova.cameravaplugin"
+    version="0.0.1">
+    <name>COBWEB Bluetooth 4.0 Low Energy Plug-in</name>
+
+
+	<js-module src="www/COBWEBBLEPlugin.js" name="COBWEBBLEPlugin">
+        <clobbers target="cordova.plugins.cobwebbleplugin" />
+    </js-module>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="COBWEBBLEPlugin" >
+                <param name="android-package" value="eu.cobwebproject.ucd.ble.COBWEBBLEPlugin"/>
+            </feature>
+        </config-file>
+
+		<config-file target="AndroidManifest.xml" parent="/*">
+              <uses-permission android:name="android.permission.BLUETOOTH"/>
+			  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+        </config-file>
+
+
+        <source-file src="src/android/COBWEBBLEPlugin.java" target-dir="src/eu/cobwebproject/ucd/ble" />
+		<source-file src="src/android/WaspmoteBLEReader.java" target-dir="src/eu/cobwebproject/ucd/ble" />
+
+    </platform>
+</plugin>
