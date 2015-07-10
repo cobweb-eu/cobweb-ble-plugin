@@ -1,6 +1,6 @@
 package eu.cobwebproject.ucd.ble;
 
-import com.example.bletest.WaspmoteBLEReader.Receiver;
+import eu.cobwebproject.ucd.ble.WaspmoteBLEReader.Receiver;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.apache.cordova.CallbackContext;
@@ -35,15 +35,18 @@ public class PluginReceiver implements Receiver{
 	@Override
 	public void addData(String vane, String plu0, String plu1, String plu2,
 			String anem) {
-		
-		JSONObject json=new JSONObject();
-		json.put("Vane",vane);
-		json.put("Plu0",plu0);
-		json.put("Plu1",plu1);
-		json.put("Plu2",plu2);
-		json.put("Anem",anem);
-		PluginResult r = new PluginResult(PluginResult.Status.OK,json);
-		cbContext.sendPluginResult(r);
+		try{
+			JSONObject json=new JSONObject();
+			json.put("Vane",vane);
+			json.put("Plu0",plu0);
+			json.put("Plu1",plu1);
+			json.put("Plu2",plu2);
+			json.put("Anem",anem);
+			PluginResult r = new PluginResult(PluginResult.Status.OK,json);
+			cbContext.sendPluginResult(r);
+		}catch(JSONException e){
+			e.printStackTrace();
+		}
 		
 		
 		

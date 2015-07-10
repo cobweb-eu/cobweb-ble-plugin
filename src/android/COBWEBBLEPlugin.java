@@ -1,4 +1,4 @@
-package ie.ucd.cobweb.cordova;
+package eu.cobwebproject.ucd.ble;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -40,7 +40,7 @@ public class COBWEBBLEPlugin extends CordovaPlugin {
 			PluginResult r = new PluginResult(PluginResult.Status.NO_RESULT);
 			r.setKeepCallback(true);
 			callbackContext.sendPluginResult(r);
-			WaspmoteBLEReader reader = new WaspmoteBLEReader(mBluetoothAdapter, cordova.getActivity(),new PluginReceiver(callbackContext));
+			WaspmoteBLEReader reader = new WaspmoteBLEReader(mBluetoothAdapter, new PluginReceiver(callbackContext),cordova.getActivity());
 			reader.start();
 		}
 		
