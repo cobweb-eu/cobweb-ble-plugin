@@ -17,18 +17,18 @@ import android.util.Log;
 
 public class WaspmoteBLEReader {
 	// private static final int SCAN_PERIOD = 10000;
-	protected static final UUID UUID_SERVICE = UUID
+	private static final UUID UUID_SERVICE = UUID
 			.fromString("eed82c0a-b1c2-401e-ae4a-afac80c80c72");
 
-	protected static final UUID UUID_VANE = UUID
+	private static final UUID UUID_VANE = UUID
 			.fromString("2eec2523-cf8f-4c65-8538-397baa8b1b0b");
-	// protected static final UUID UUID_ANEM = UUID
+	// private static final UUID UUID_ANEM = UUID
 	// .fromString("a5853c93-08af-4186-8dba-b4c0cc74a23b");
-	// protected static final UUID UUID_PLU0 = UUID
+	// private static final UUID UUID_PLU0 = UUID
 	// .fromString("e562b410-e8d2-4fe0-89c1-91432f108fe1");//Current Hour
-	// protected static final UUID UUID_PLU1 = UUID
+	// private static final UUID UUID_PLU1 = UUID
 	// .fromString("a94ba516-c627-4e00-a28b-b5cd825d8e14");//Previous Hour
-	// protected static final UUID UUID_PLU2 = UUID
+	// private static final UUID UUID_PLU2 = UUID
 	// .fromString("be39a5dc-048b-4b8f-84cb-94c197edd26e");//Day
 
 	private String vane = null;

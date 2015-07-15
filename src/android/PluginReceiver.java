@@ -50,12 +50,18 @@ public class PluginReceiver implements Receiver{
 			json.put(PLU1,plu1);
 			json.put(PLU2,plu2);
 			json.put(ANEM,anem);
-			PluginResult r = new PluginResult(PluginResult.Status.OK,json);
-			cbContext.sendPluginResult(r);
+			JSONArray jArr=new JSONArray();
+			jArr.put(json);
+			sendData(jArr);
 		}catch(JSONException e){
 			e.printStackTrace();
 		}
 		
+	}
+	
+	private void sendData(JSONArray jArr){
+		PluginResult r = new PluginResult(PluginResult.Status.OK,jArr);
+		cbContext.sendPluginResult(r);
 	}
 	
 	public void addData(double[][]data) {
@@ -72,8 +78,8 @@ public class PluginReceiver implements Receiver{
 				jArr.put(json);
 			}
 			
-			PluginResult r = new PluginResult(PluginResult.Status.OK,jArr);
-			cbContext.sendPluginResult(r);
+			sendData(jArr);
+			
 		}catch(JSONException e){
 			e.printStackTrace();
 		}
