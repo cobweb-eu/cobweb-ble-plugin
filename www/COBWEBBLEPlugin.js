@@ -8,6 +8,7 @@ exports.pollArrayBLEData = function(success, error) {
     exec(success, error, "COBWEBBLEPlugin", "btArrayRead", []);
 };
 
+// Test code for obtaining data from BLE devices
 exports.testBLEData = function(success, error) {
     exec(success, error, "COBWEBBLEPlugin", "test", []);
 };

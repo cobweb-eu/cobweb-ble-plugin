@@ -32,6 +32,7 @@ public class COBWEBBLEPlugin extends CordovaPlugin {
 	private static final String TEST="test";
 	private static final String AREAD="btArrayRead";
 	private static final String ATEST="testArr";
+	private static final int STIME=10000;
 
 	@Override
 	public boolean execute(String action, JSONArray args,
@@ -64,7 +65,7 @@ public class COBWEBBLEPlugin extends CordovaPlugin {
 			new Thread(){
 				public void run(){
 					try{
-						Thread.sleep(10000);
+						Thread.sleep(STIME);
 						double testData[][]=new double[NUMT][NUMS];
 						Random r=new Random();
 						for(int i=0;i<NUMT;i++){
@@ -88,7 +89,7 @@ public class COBWEBBLEPlugin extends CordovaPlugin {
 			new Thread(){
 				public void run(){
 					try{
-						Thread.sleep(10000);
+						Thread.sleep(STIME);
 						pr.addData("1.3","2.3","1.0","2.0","2.1");
 					}catch(InterruptedException e){
 						e.printStackTrace();
