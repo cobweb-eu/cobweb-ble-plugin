@@ -49,6 +49,10 @@ public class COBWEBBLEPlugin extends CordovaPlugin {
 				
 				
 			}
+		}else if(action.equals("btArrayRead")){
+			
+			// Not supported yet
+			callbackContext.error(EMSG);
 		}else{
 			// Test Code
 			final PluginReceiver pr= new PluginReceiver(callbackContext);
