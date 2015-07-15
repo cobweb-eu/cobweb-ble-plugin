@@ -1,4 +1,4 @@
-package com.example.bletest;
+package eu.cobwebproject.ucd.ble;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -39,10 +39,12 @@ public class WaspmoteBLEReader {
 
 	private BluetoothAdapter adapter;
 	private Receiver receiver;
+	private Context context;
 
-	public WaspmoteBLEReader(BluetoothAdapter adapter, Receiver receiver) {
+	public WaspmoteBLEReader(BluetoothAdapter adapter, Receiver receiver,Context c) {
 		this.adapter = adapter;
 		this.receiver = receiver;
+		context=c;
 
 		receiver.update("Bluetooth Connected.");
 	}
@@ -65,7 +67,7 @@ public class WaspmoteBLEReader {
 				byte[] scanRecord) {
 			String address = device.getAddress();
 			if (address.startsWith("00:07:80:04:FA:35"))
-				device.connectGatt(receiver.getContext(), false, callback_gatt);
+				device.connectGatt(context, false, callback_gatt);
 		}
 	};
 
@@ -179,8 +181,6 @@ public class WaspmoteBLEReader {
 		void addData(String vane, String plu0, String plu1, String plu2,
 				String anem);
 
-		Context getContext();
-
-		Looper getMainLooper();
+		
 	}
 }
