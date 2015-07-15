@@ -28,12 +28,16 @@ public class COBWEBBLEPlugin extends CordovaPlugin {
 	private static String EMSG="Error connecting to Bluetooth device";
 	private static final int NUMT=10;
 	private static final int NUMS=5;
+	private static final String READ="btRead";
+	private static final String TEST="test";
+	private static final String AREAD="btArrayRead";
+	private static final String ATEST="testArr";
 
 	@Override
 	public boolean execute(String action, JSONArray args,
 			CallbackContext callbackContext) throws JSONException {
 
-		if(action.equals("btRead")){
+		if(action.equals(READ)){
 			BluetoothManager bluetoothManager = (BluetoothManager) cordova.getActivity().
 				getSystemService(Context.BLUETOOTH_SERVICE);
 			BluetoothAdapter mBluetoothAdapter = bluetoothManager.getAdapter();
@@ -46,54 +50,55 @@ public class COBWEBBLEPlugin extends CordovaPlugin {
 				callbackContext.sendPluginResult(r);
 				WaspmoteBLEReader reader = new WaspmoteBLEReader(mBluetoothAdapter, new PluginReceiver(callbackContext),cordova.getActivity());
 				reader.start();
-				
-				
 			}
-		}else if(action.equals("btArrayRead")){
+			return true;
+			
+		}else if(action.equals(AREAD)){
 			
 			// Not supported yet
 			callbackContext.error(EMSG);
-		}else{
-			// Test Code
-			final PluginReceiver pr= new PluginReceiver(callbackContext);
 			
-			if(action.equals("testArr")){
-				new Thread(){
-					public void run(){
-						try{
-							Thread.sleep(10000);
-							double testData[][]=new double[NUMT][NUMS];
-							Random r=new Random();
-							for(int i=0;i<NUMT;i++){
-								for(int j=0;j<NUMS;j++){
-									testData[i][j]=r.nextDouble();
-								}
+			return true;
+		}else if(action.equals(ATEST)){
+			final PluginReceiver pr= new PluginReceiver(callbackContext);
+			new Thread(){
+				public void run(){
+					try{
+						Thread.sleep(10000);
+						double testData[][]=new double[NUMT][NUMS];
+						Random r=new Random();
+						for(int i=0;i<NUMT;i++){
+							for(int j=0;j<NUMS;j++){
+								testData[i][j]=r.nextDouble();
 							}
-							
-							pr.addData(testData);
-							
-						}catch(InterruptedException e){
-							e.printStackTrace();
 						}
+						
+						pr.addData(testData);
+						
+					}catch(InterruptedException e){
+						e.printStackTrace();
 					}
-				}.start();
+				}
+			}.start();
+			
+			return true;
 
-			}else{
-				new Thread(){
-					public void run(){
-						try{
-							Thread.sleep(10000);
-							pr.addData("1.3","2.3","1.0","2.0","2.1");
-						}catch(InterruptedException e){
-							e.printStackTrace();
-						}
+		}else if(action.equals(TEST)){
+			final PluginReceiver pr= new PluginReceiver(callbackContext);
+			new Thread(){
+				public void run(){
+					try{
+						Thread.sleep(10000);
+						pr.addData("1.3","2.3","1.0","2.0","2.1");
+					}catch(InterruptedException e){
+						e.printStackTrace();
 					}
-				}.start();
-			}
+				}
+			}.start();
+			return true;
 		}
 		
-
-		return true;
+		return false;
 
 	}
 
