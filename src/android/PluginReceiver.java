@@ -3,11 +3,19 @@ package eu.cobwebproject.ucd.ble;
 import eu.cobwebproject.ucd.ble.WaspmoteBLEReader.Receiver;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
 
 public class PluginReceiver implements Receiver{
 
+
+	private static final String VANE="Vane";
+	private static final String PLU0="Plu0";
+	private static final String PLU1="Plu1";
+	private static final String PLU2="Plu2";
+	private static final String ANEM="Anem";
+	
 	CallbackContext cbContext;
 	public PluginReceiver(CallbackContext cbc){
 		
@@ -37,18 +45,38 @@ public class PluginReceiver implements Receiver{
 			String anem) {
 		try{
 			JSONObject json=new JSONObject();
-			json.put("Vane",vane);
-			json.put("Plu0",plu0);
-			json.put("Plu1",plu1);
-			json.put("Plu2",plu2);
-			json.put("Anem",anem);
+			json.put(VANE,vane);
+			json.put(PLU0,plu0);
+			json.put(PLU1,plu1);
+			json.put(PLU2,plu2);
+			json.put(ANEM,anem);
 			PluginResult r = new PluginResult(PluginResult.Status.OK,json);
 			cbContext.sendPluginResult(r);
 		}catch(JSONException e){
 			e.printStackTrace();
 		}
 		
-		
+	}
+	
+	public void addData(double[][]data) {
+		try{
+			int n=data.length;
+			JSONArray jArr=new JSONArray();
+			for(int i=0;i<n;i++){
+				JSONObject json=new JSONObject();
+				json.put(VANE,data[i][0]);
+				json.put(PLU0,data[i][1]);
+				json.put(PLU1,data[i][2]);
+				json.put(PLU2,data[i][3]);
+				json.put(ANEM,data[i][4]);
+				jArr.put(json);
+			}
+			
+			PluginResult r = new PluginResult(PluginResult.Status.OK,jArr);
+			cbContext.sendPluginResult(r);
+		}catch(JSONException e){
+			e.printStackTrace();
+		}
 		
 	}
 	
