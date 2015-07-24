@@ -1,34 +1,3 @@
-/*
- *  ------------------ [BLE_13] - Characteristic notification - Slave ----
- *  Explanation: This example shows how indicate processes works.
- *  The program first make itself discoverable and connectable, waiting 
- *  for incoming connections. Once connected, waits for indication 
- *  subscribing events and, when they are found, the subscribed attribute is 
- *  written five times to allow the master receive notification events.
- *  Then, it waits till the indication acknowledge event fro the written value.
- *  Finally, it keeps waiting events till the connection is over.
- *
- *  Copyright (C) 2014 Libelium Comunicaciones Distribuidas S.L.
- *  http://www.libelium.com
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- * 
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS ARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- * 
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- *  Version:		0.1
- *  Design:		David Gascón
- *  Implementation:	Javier Siscart
- */
-
 #include <WaspBLE.h>
 #include <WaspSensorAgr_v20.h>
 
@@ -49,12 +18,11 @@ int vane;
 
 int power;
 
-char a_pwer[10] = {0};
-char a_wind[10] = {0}; 
-char a_anem[10] = {0}; 
-char a_plu0[10] = {0}; 
-char a_plu1[10] = {0}; 
-char a_plu2[10] = {0}; 
+unsigned long epoch;
+
+// Documentation says maximum attribute size is 54 bytes. Anything over 21 fails to be written.
+uint8_t message[21] = {
+  0};
 
 void setup() 
 {  
@@ -64,6 +32,8 @@ void setup()
   SensorAgrv20.ON();  
   RTC.ON();
   BLE.ON(SOCKET0);
+
+  SensorAgrv20.attachPluvioInt();
 
   USB.print(F("Time:"));
   USB.println(RTC.getTime());
@@ -109,7 +79,8 @@ void loop()
     }
 
     // Clear flag
-    intFlag &= ~(PLV_INT); 
+    intFlag &= ~(PLV_INT);   
+    SensorAgrv20.attachPluvioInt();
   }
 
   measureSensors();
@@ -143,9 +114,11 @@ void measureSensors()
   pluviometer3 = SensorAgrv20.readPluviometerDay();
 
   // Read the vane sensor 
-  vane = SensorAgrv20.readValue(SENS_AGR_VANE);
+  /*vane = */  SensorAgrv20.readValue(SENS_AGR_VANE);
 
   power = PWR.getBatteryLevel();
+
+  epoch = RTC.getEpochTime();
 
   // Turn off the sensor
   SensorAgrv20.setSensorMode(SENS_OFF, SENS_AGR_ANEMOMETER);
@@ -157,6 +130,9 @@ void measureSensors()
 
   USB.print(F("Power: "));
   USB.println( power );
+
+  USB.print(F("Epoch: "));
+  USB.println( epoch );
 
   // Print the accumulated rainfall
   USB.print(F("Current hour accumulated rainfall (mm/h): "));
@@ -176,58 +152,74 @@ void measureSensors()
   USB.println(F("km/h"));
 
   // Print the vane value
-  char vane_str[10] = {
-    0                };
+  char vane_str[10] = {    
+    0                  };
   USB.print(F("Vane: "));
   switch(SensorAgrv20.vaneDirection)
   {
   case  SENS_AGR_VANE_N   :  
     snprintf( vane_str, sizeof(vane_str), "N" );
+    vane = 0;
     break;
   case  SENS_AGR_VANE_NNE :  
     snprintf( vane_str, sizeof(vane_str), "NNE" );
+    vane = 1;
     break;  
   case  SENS_AGR_VANE_NE  :  
     snprintf( vane_str, sizeof(vane_str), "NE" );
+    vane = 2;
     break;    
   case  SENS_AGR_VANE_ENE :  
     snprintf( vane_str, sizeof(vane_str), "ENE" );
+    vane = 3;
     break;      
   case  SENS_AGR_VANE_E   :  
     snprintf( vane_str, sizeof(vane_str), "E" );
+    vane = 4;
     break;    
   case  SENS_AGR_VANE_ESE :  
     snprintf( vane_str, sizeof(vane_str), "ESE" );
+    vane = 5;
     break;  
   case  SENS_AGR_VANE_SE  :  
     snprintf( vane_str, sizeof(vane_str), "SE" );
+    vane = 6;
     break;    
   case  SENS_AGR_VANE_SSE :  
     snprintf( vane_str, sizeof(vane_str), "SSE" );
+    vane = 7;
     break;   
   case  SENS_AGR_VANE_S   :  
     snprintf( vane_str, sizeof(vane_str), "S" );
+    vane = 8;
     break; 
   case  SENS_AGR_VANE_SSW :  
     snprintf( vane_str, sizeof(vane_str), "SSW" );
+    vane = 9;
     break; 
   case  SENS_AGR_VANE_SW  :  
     snprintf( vane_str, sizeof(vane_str), "SW" );
+    vane = 10;
     break;  
   case  SENS_AGR_VANE_WSW :  
     snprintf( vane_str, sizeof(vane_str), "WSW" );
+    vane = 11;
     break; 
   case  SENS_AGR_VANE_W   :  
     snprintf( vane_str, sizeof(vane_str), "W" );
+    vane = 12;
     break;   
   case  SENS_AGR_VANE_WNW :  
     snprintf( vane_str, sizeof(vane_str), "WNW" );
+    vane = 13;
     break; 
   case  SENS_AGR_VANE_NW  :  
-    snprintf( vane_str, sizeof(vane_str), "WN" );
+    snprintf( vane_str, sizeof(vane_str), "NW" );
+    vane = 14;
     break;
   case  SENS_AGR_VANE_NNW :  
     snprintf( vane_str, sizeof(vane_str), "NNW" );
+    vane = 15;
     break;  
   default                 :  
     snprintf( vane_str, sizeof(vane_str), "error" );
@@ -235,65 +227,82 @@ void measureSensors()
   }
 
   USB.print( vane_str );
-  USB.print(" ");
+  USB.print(F(" "));
   USB.println(vane);
   USB.println(F("----------------------------------------------------\n"));
 }
 
 void prepareData() {
-  char* wnd = a_wind;
-  char* ane = a_anem;
-  char* pl0 = a_plu0;
-  char* pl1 = a_plu1;
-  char* pl2 = a_plu2;
+  // Vane   1 byte
+  // Anem   3 bytes (2.5 bytes technically)
+  // Pluvio 3 bytes 
+  // Power  1 byte
+  // Epoch  4 bytes
 
-  itoa(vane, wnd, 16);
+  // 1 + 1 + 3 + 3*3 + 4 = 14 + 4
 
-  encode(  anemometer, ane, 01000, "%2s%2s", "Anem");
-  encode(pluviometer1, pl0, 10000, "%3s%2s", "Plu0");
-  encode(pluviometer2, pl1, 10000, "%3s%2s", "Plu1");
-  encode(pluviometer3, pl2, 10000, "%3s%2s", "Plu2");
+  //  USB.println(F("Encoding"));
 
-  // Documentation says maximum attribute size is 54 bytes. Anything over 21 fails to be written.
-  char message[21] = {
-    0            };//
-  char* r = message;
+  message[0] = vane;
+  encode(  anemometer,  message,  1, "Anem");
+  encode(pluviometer1,  message,  4, "Plu0");
+  encode(pluviometer2,  message,  7, "Plu1");
+  encode(pluviometer3,  message, 10, "Plu2");
+  message[13] = power;
+  time(epoch       ,  message, 14, "Time");
 
-  sprintf(message, "%s%s%s%s%s%c", wnd,ane,pl0,pl1,pl2,power);
+  uint8_t* r = message;
 
-  BLE.writeLocalAttribute(48, r);// 2EEC
+  BLE.writeLocalAttribute(48, r, 21);// 2EEC
 
+  //  USB.println(F("Message: "));
+  //  for(int i = 0; i<21;i++) {
+  //    USB.print( message[i], HEX);
+  //    USB.println();
+  //  }
+  //  USB.println(F("EOM"));
   //  USB.println(results);
 }
 
-void encode(float num, char* out, uint64_t clearance, char* fmt ,char* message) {
-  uint64_t base = ((uint64_t)num) % clearance ;
-  uint64_t frac = ((uint64_t)(num*100))%100;
+void encode(float num, uint8_t out[], int offset ,char* message) {
+  //Length 3.
+  int encoded = (int)(num*100);
 
-  char* top = "10000";
-  char* bot = "10";
+  int p1 = (int)((encoded>>16) & 0xFF);
+  int p2 = (int)((encoded>> 8) & 0xFF);
+  int p3 = (int)((encoded    ) & 0xFF);
 
-  itoa(base, top, 16);
-  itoa(frac, bot, 16);
+  out[offset + 0] = p1;
+  out[offset + 1] = p2;
+  out[offset + 2] = p3;
 
-  sprintf(out, fmt, top,bot);
-
-  //  USB.print(message);
-  //  USB.print(" ]");
-
-  //  USB.println(num);
-  //  USB.print("b ");
-  //  USB.println(base);
-  //  USB.print("f ");
-  //  USB.println(frac);
-  //  USB.print(" Top  ");
-  //  USB.println(top);
-  //  USB.print(" Bot  ");
-  //  USB.println(bot);
-
-  //  USB.print(out);
-  //  USB.println("[");
+  //  USB.println(message);
+  //  USB.println(encoded);
+  //  USB.println(p1);
+  //  USB.println(p2);
+  //  USB.println(p3);
 }
+
+void time(unsigned long num, uint8_t out[], int offset, char* message) {
+  //Length 4.
+
+  int p1 = (int)((num>>24) & 0xFF);
+  int p2 = (int)((num>>16) & 0xFF);
+  int p3 = (int)((num>> 8) & 0xFF);
+  int p4 = (int)((num    ) & 0xFF);
+
+  out[offset + 0] = p1;
+  out[offset + 1] = p2;
+  out[offset + 2] = p3;
+  out[offset + 3] = p4;
+
+  //  USB.println(message);
+  //  USB.println(p1);
+  //  USB.println(p2);
+  //  USB.println(p3);
+  //  USB.println(p4);
+}
+
 
 
 

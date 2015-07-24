@@ -10,11 +10,14 @@ import org.apache.cordova.PluginResult;
 public class PluginReceiver implements Receiver{
 
 
+	private static final String ADDR="Address";
 	private static final String VANE="Vane";
 	private static final String PLU0="Plu0";
 	private static final String PLU1="Plu1";
 	private static final String PLU2="Plu2";
 	private static final String ANEM="Anem";
+	private static final String POWR="Power";
+	private static final String TIME="Time";
 	
 	CallbackContext cbContext;
 	public PluginReceiver(CallbackContext cbc){
@@ -41,15 +44,18 @@ public class PluginReceiver implements Receiver{
 	}
 
 	@Override
-	public void addData(String vane, String plu0, String plu1, String plu2,
-			String anem) {
+	public void addData(String addr, String vane, String plu0, String plu1,
+				String plu2, String anem, String powr, String time) {
 		try{
 			JSONObject json=new JSONObject();
+			json.put(ADDR,addr);
 			json.put(VANE,vane);
 			json.put(PLU0,plu0);
 			json.put(PLU1,plu1);
 			json.put(PLU2,plu2);
 			json.put(ANEM,anem);
+			json.put(POWR,powr);
+			json.put(TIME,time);
 			JSONArray jArr=new JSONArray();
 			jArr.put(json);
 			sendData(jArr);

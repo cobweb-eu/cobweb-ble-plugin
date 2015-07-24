@@ -1,7 +1,7 @@
 package eu.cobwebproject.ucd.ble;
 
+import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
 
@@ -17,18 +17,18 @@ import android.util.Log;
 
 public class WaspmoteBLEReader {
 	// private static final int SCAN_PERIOD = 10000;
-	private static final UUID UUID_SERVICE = UUID
+	protected static final UUID UUID_SERVICE = UUID
 			.fromString("eed82c0a-b1c2-401e-ae4a-afac80c80c72");
 
-	private static final UUID UUID_VANE = UUID
+	protected static final UUID UUID_CHARACTERISTIC = UUID
 			.fromString("2eec2523-cf8f-4c65-8538-397baa8b1b0b");
-	// private static final UUID UUID_ANEM = UUID
+	// protected static final UUID UUID_ANEM = UUID
 	// .fromString("a5853c93-08af-4186-8dba-b4c0cc74a23b");
-	// private static final UUID UUID_PLU0 = UUID
+	// protected static final UUID UUID_PLU0 = UUID
 	// .fromString("e562b410-e8d2-4fe0-89c1-91432f108fe1");//Current Hour
-	// private static final UUID UUID_PLU1 = UUID
+	// protected static final UUID UUID_PLU1 = UUID
 	// .fromString("a94ba516-c627-4e00-a28b-b5cd825d8e14");//Previous Hour
-	// private static final UUID UUID_PLU2 = UUID
+	// protected static final UUID UUID_PLU2 = UUID
 	// .fromString("be39a5dc-048b-4b8f-84cb-94c197edd26e");//Day
 
 	private String vane = null;
@@ -36,15 +36,17 @@ public class WaspmoteBLEReader {
 	private String plu1 = null;
 	private String plu2 = null;
 	private String anem = null;
+	private String powr = null;
+	private String time = null;
+
+	private String address = null;
 
 	private BluetoothAdapter adapter;
 	private Receiver receiver;
-	private Context context;
 
-	public WaspmoteBLEReader(BluetoothAdapter adapter, Receiver receiver,Context c) {
+	public WaspmoteBLEReader(BluetoothAdapter adapter, Receiver receiver) {
 		this.adapter = adapter;
 		this.receiver = receiver;
-		context=c;
 
 		receiver.update("Bluetooth Connected.");
 	}
@@ -67,7 +69,7 @@ public class WaspmoteBLEReader {
 				byte[] scanRecord) {
 			String address = device.getAddress();
 			if (address.startsWith("00:07:80:04:FA:35"))
-				device.connectGatt(context, false, callback_gatt);
+				device.connectGatt(receiver.getContext(), false, callback_gatt);
 		}
 	};
 
@@ -84,8 +86,8 @@ public class WaspmoteBLEReader {
 
 		@Override
 		public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-			//super.onServicesDiscovered(gatt, status);
-			if(status!= BluetoothGatt.GATT_SUCCESS) {
+			// super.onServicesDiscovered(gatt, status);
+			if (status != BluetoothGatt.GATT_SUCCESS) {
 				gatt.discoverServices();
 				return;
 			}
@@ -94,12 +96,12 @@ public class WaspmoteBLEReader {
 			if (service == null)
 				return;
 
-			//stop();
+			// stop();
 			receiver.update("Reading Properties");
 
 			BluetoothGattCharacteristic prop = service
-					.getCharacteristic(UUID_VANE);
-			if(prop==null) {
+					.getCharacteristic(UUID_CHARACTERISTIC);
+			if (prop == null) {
 				gatt.discoverServices();
 				return;
 			}
@@ -118,7 +120,7 @@ public class WaspmoteBLEReader {
 		@Override
 		public void onCharacteristicRead(BluetoothGatt gatt,
 				BluetoothGattCharacteristic characteristic, int status) {
-			//super.onCharacteristicRead(gatt, characteristic, status);
+			// super.onCharacteristicRead(gatt, characteristic, status);
 
 			if (status != BluetoothGatt.GATT_SUCCESS) {
 				Log.w("BLE Test", "Read failed for some reason.");
@@ -136,38 +138,32 @@ public class WaspmoteBLEReader {
 			if (status != BluetoothGatt.GATT_SUCCESS) {
 				return;
 			}
-
+			address = gatt.getDevice().getAddress();
 			UUID id = characteristic.getUuid();
 			byte[] val = characteristic.getValue();
-			String value = new String(val);
 
-			if (UUID_VANE.equals(id)) {
-				String[] temp = value.split(",");
-				vane = "NS";//temp[0];
-				plu0 = "0.12";//temp[1];
-				plu1 = "0.09";//temp[2];
-				plu2 = "9.91";//temp[3];
-				anem = "1001.1";//temp[4];
-				Log.i("BLE Test", "Response: " + value);
-				// } else if (UUID_PLU0.equals(id)) {
-				// plu0 = value;
-				// Log.i("BLE Test", "Plu0: " + value);
-				// } else if (UUID_PLU1.equals(id)) {
-				// plu1 = value;
-				// Log.i("BLE Test", "Plu1: " + value);
-				// } else if (UUID_PLU2.equals(id)) {
-				// plu2 = value;
-				// Log.i("BLE Test", "Plu2: " + value);
-				// } else if (UUID_ANEM.equals(id)) {
-				// anem = value;
-				// Log.i("BLE Test", "Anem: " + value);
-			}
-			if (vane != null && plu0 != null && plu1 != null && plu2 != null
-					&& anem != null) {
-				Log.i("BLE Test", "Completed");
+			if (UUID_CHARACTERISTIC.equals(id)) {
+				// Prop Loc Len
+				// Vane 0 1
+				// Anem 1 3
+				// Plu0 4 3
+				// Plu1 7 3
+				// Plu2 10 3
+				// Pwr 13 1
+				// Time 14 4
+				// empty 18 - 20
+				vane = getDirection(val[0]);
+				anem = extract(Arrays.copyOfRange(val, 1, 4));
+				plu0 = extract(Arrays.copyOfRange(val, 4, 7));
+				plu1 = extract(Arrays.copyOfRange(val, 7, 10));
+				plu2 = extract(Arrays.copyOfRange(val, 10, 13));
+				powr = Byte.valueOf(val[13]).toString();
+				time = extractTime(Arrays.copyOfRange(val, 14, 18));
+
 				receiver.update("All sensors received");
-				receiver.addData(vane, plu0, plu1, plu2, anem);
-				vane = plu0 = plu1 = plu2 = anem = null;
+				receiver.addData(address, vane, plu0, plu1, plu2, anem, powr,
+						time);
+				vane = plu0 = plu1 = plu2 = anem = powr = time = null;
 				stop();
 				gatt.disconnect();
 				gatt.close();
@@ -178,9 +174,82 @@ public class WaspmoteBLEReader {
 	public interface Receiver {
 		void update(String message);
 
-		void addData(String vane, String plu0, String plu1, String plu2,
-				String anem);
+		void addData(String address, String vane, String plu0, String plu1,
+				String plu2, String anem, String powr, String time);
 
-		
+		Context getContext();
+
+		Looper getMainLooper();
+	}
+
+	protected String getDirection(byte b) {
+		String val = "error";
+		switch (b) {
+		case 0:
+			val = "N";
+			break;
+		case 1:
+			val = "NNE";
+			break;
+		case 2:
+			val = "NE";
+			break;
+		case 3:
+			val = "ENE";
+			break;
+		case 4:
+			val = "E";
+			break;
+		case 5:
+			val = "ESE";
+			break;
+		case 6:
+			val = "SE";
+			break;
+		case 7:
+			val = "SSE";
+			break;
+		case 8:
+			val = "S";
+			break;
+		case 9:
+			val = "SSW";
+			break;
+		case 10:
+			val = "SW";
+			break;
+		case 11:
+			val = "WSW";
+			break;
+		case 12:
+			val = "W";
+			break;
+		case 13:
+			val = "WNW";
+			break;
+		case 14:
+			val = "NW";
+			break;
+		case 15:
+			val = "NNW";
+			break;
+		}
+		return val;
+	}
+
+	protected String extractTime(byte[] temp) {
+		long val = ((temp[0] & 0xFF) << 24);
+		val |= ((temp[1] & 0xFF) << 16);
+		val |= ((temp[2] & 0xFF) << 8);
+		val |= (temp[3] & 0xFF);
+		return String.format("%d", val);
+	}
+
+	protected String extract(byte[] temp) {
+		long val = ((temp[0] & 0xFF) << 16);
+		val |= ((temp[1] & 0xFF) << 8);
+		val |= (temp[2] & 0xFF);
+		float value = ((float) val) / 100;
+		return String.format("%.2f", value);
 	}
 }
