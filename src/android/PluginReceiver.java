@@ -7,7 +7,7 @@ import org.json.JSONArray;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
 
-public class PluginReceiver implements Receiver{
+public class PluginReceiver implements Receiver {
 
 
 	private static final String ADDR="Address";
@@ -63,6 +63,12 @@ public class PluginReceiver implements Receiver{
 			e.printStackTrace();
 		}
 		
+	}
+	
+	@Override
+	public void failed() {
+        PluginResult r = new PluginResult(PluginResult.Status.ERROR);
+        cbContext.sendPluginResult(r);
 	}
 	
 	private void sendData(JSONArray jArr){

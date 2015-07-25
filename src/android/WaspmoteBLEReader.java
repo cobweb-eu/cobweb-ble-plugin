@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
@@ -44,6 +45,8 @@ public class WaspmoteBLEReader {
 	private BluetoothAdapter adapter;
 	private Receiver receiver;
 
+	private boolean running;
+
 	public WaspmoteBLEReader(BluetoothAdapter adapter, Receiver receiver) {
 		this.adapter = adapter;
 		this.receiver = receiver;
@@ -53,14 +56,35 @@ public class WaspmoteBLEReader {
 
 	@SuppressWarnings("deprecation")
 	public void start() {
+		if (running)
+			return;
 		adapter.startLeScan(callback_scan);
 
 		receiver.update("Scanning");
+		running = true;
+		new Handler(receiver.getMainLooper()).postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(60000);
+				} catch (InterruptedException e) {
+				}
+				if (running)
+					WaspmoteBLEReader.this.stop(false);
+			}
+		}, 60000);
+	}
+
+	public void stop() {
+		stop(true);
 	}
 
 	@SuppressWarnings("deprecation")
-	public void stop() {
+	private void stop(boolean success) {
+		running = false;
 		this.adapter.stopLeScan(callback_scan);
+		if (!success)
+			receiver.failed();
 	}
 
 	private BluetoothAdapter.LeScanCallback callback_scan = new BluetoothAdapter.LeScanCallback() {
@@ -68,8 +92,8 @@ public class WaspmoteBLEReader {
 		public void onLeScan(final BluetoothDevice device, int rssi,
 				byte[] scanRecord) {
 			String address = device.getAddress();
-			if (address.startsWith("00:07:80:04:FA:35"))
-				device.connectGatt(receiver.getContext(), false, callback_gatt);
+			// if (address.startsWith("00:07:80:04:FA:35"))
+			device.connectGatt(receiver.getContext(), false, callback_gatt);
 		}
 	};
 
@@ -86,7 +110,6 @@ public class WaspmoteBLEReader {
 
 		@Override
 		public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-			// super.onServicesDiscovered(gatt, status);
 			if (status != BluetoothGatt.GATT_SUCCESS) {
 				gatt.discoverServices();
 				return;
@@ -106,21 +129,11 @@ public class WaspmoteBLEReader {
 				return;
 			}
 			boolean success = gatt.readCharacteristic(prop);
-			// queue.add(gatt_vane);
-			// prop = service.getCharacteristic(UUID_PLU0);
-			// queue.add(prop);
-			// prop = service.getCharacteristic(UUID_PLU1);
-			// queue.add(prop);
-			// prop = service.getCharacteristic(UUID_PLU2);
-			// queue.add(prop);
-			// prop = service.getCharacteristic(UUID_ANEM);
-			// queue.add(prop);
 		}
 
 		@Override
 		public void onCharacteristicRead(BluetoothGatt gatt,
 				BluetoothGattCharacteristic characteristic, int status) {
-			// super.onCharacteristicRead(gatt, characteristic, status);
 
 			if (status != BluetoothGatt.GATT_SUCCESS) {
 				Log.w("BLE Test", "Read failed for some reason.");
@@ -164,7 +177,7 @@ public class WaspmoteBLEReader {
 				receiver.addData(address, vane, plu0, plu1, plu2, anem, powr,
 						time);
 				vane = plu0 = plu1 = plu2 = anem = powr = time = null;
-				stop();
+				stop(true);
 				gatt.disconnect();
 				gatt.close();
 			}
@@ -173,6 +186,8 @@ public class WaspmoteBLEReader {
 
 	public interface Receiver {
 		void update(String message);
+
+		void failed();
 
 		void addData(String address, String vane, String plu0, String plu1,
 				String plu2, String anem, String powr, String time);
