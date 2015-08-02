@@ -19,6 +19,7 @@ int vane;
 int power;
 
 unsigned long epoch;
+timestamp_t   timestamp;
 
 // Documentation says maximum attribute size is 54 bytes. Anything over 21 fails to be written.
 uint8_t message[21] = {
@@ -42,7 +43,7 @@ void setup()
   //RTC.setTime("22:07:15:04:12:58:00");
 
   //Switch away from Agriculture sleep//
-  RTC.setAlarm1("00:00:00:00", RTC_ABSOLUTE, RTC_ALM1_MODE5);
+  //RTC.setAlarm1("00:00:00:00", RTC_ABSOLUTE, RTC_ALM1_MODE5);
 
   // 1. Make Waspmote visible to other BLE modules
   BLE.setDiscoverableMode(BLE_GAP_GENERAL_DISCOVERABLE);
@@ -87,9 +88,29 @@ void loop()
 
   prepareData();
 
-  // 3. Wait for connection status event during 30 seconds.
-  //flag = BLE.waitEvent(10000); 
-  delay(15000);
+  RTC.breakTimeAbsolute( epoch, &timestamp ); 
+
+  //  USB.print(F("Current hour num: "));
+  //  USB.println(timestamp.hour, DEC);
+  if( timestamp.hour >= 21 || timestamp.hour < 6 ) {
+    USB.println(F("Time after 22 or before 6"));
+    BLE.OFF();
+    
+    //MODE5 - Seconds match.
+    //MODE4 - Minutes and seconds match.
+    //SensorAgrv20.sleepAgr("00:00:00:00", RTC_ABSOLUTE, RTC_ALM1_MODE4, SENS_OFF, SENS_AGR_PLUVIOMETER);
+    delay(3600000); //Sleep an hour.
+    delay(500);
+    BLE.ON(SOCKET0);
+    delay(500);
+    BLE.setDiscoverableMode(BLE_GAP_GENERAL_DISCOVERABLE);
+    BLE.setConnectableMode(BLE_GAP_UNDIRECTED_CONNECTABLE);
+  }
+  else {
+    BLE.sleep();
+    delay(60000);
+    BLE.wakeUp();
+  }
 }
 
 void measureSensors()
@@ -102,6 +123,7 @@ void measureSensors()
   ///////////////////////////////////////////////////// 
 
   // Turn on the sensor and wait for stabilization and response time
+  RTC.ON();
   SensorAgrv20.setSensorMode(SENS_ON, SENS_AGR_ANEMOMETER);
   delay(10);
 
@@ -122,6 +144,7 @@ void measureSensors()
 
   // Turn off the sensor
   SensorAgrv20.setSensorMode(SENS_OFF, SENS_AGR_ANEMOMETER);
+  RTC.OFF();
 
 
   /////////////////////////////////////////////////////
@@ -153,7 +176,7 @@ void measureSensors()
 
   // Print the vane value
   char vane_str[10] = {    
-    0                  };
+    0                          };
   USB.print(F("Vane: "));
   switch(SensorAgrv20.vaneDirection)
   {
@@ -302,6 +325,10 @@ void time(unsigned long num, uint8_t out[], int offset, char* message) {
   //  USB.println(p3);
   //  USB.println(p4);
 }
+
+
+
+
 
 
 
