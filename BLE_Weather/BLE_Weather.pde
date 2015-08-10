@@ -16,6 +16,11 @@ float pluviometer3; //mm in last 24 hours
 // Variable to store the vane value
 int vane;
 
+char anem[10] = {0};
+char plu1[10] = {0};
+char plu2[10] = {0};
+char plu3[10] = {0};
+
 int power;
 
 unsigned long epoch;
@@ -24,6 +29,10 @@ timestamp_t   timestamp;
 // Documentation says maximum attribute size is 54 bytes. Anything over 21 fails to be written.
 uint8_t message[21] = {
   0};
+
+char vane_str[10] = { 0 };
+char filename[20];
+char data[128];
 
 void setup() 
 {  
@@ -40,7 +49,7 @@ void setup()
   USB.println(RTC.getTime());
 
   //04 is Wednesday.
-  //RTC.setTime("22:07:15:04:12:58:00");
+  //RTC.setTime("10:08:15:02:12:22:00");
 
   //Switch away from Agriculture sleep//
   //RTC.setAlarm1("00:00:00:00", RTC_ABSOLUTE, RTC_ALM1_MODE5);
@@ -85,7 +94,8 @@ void loop()
   }
 
   measureSensors();
-
+  printData();
+  saveDataToFile();
   prepareData();
 
   RTC.breakTimeAbsolute( epoch, &timestamp ); 
@@ -95,7 +105,7 @@ void loop()
   if( timestamp.hour >= 21 || timestamp.hour < 6 ) {
     USB.println(F("Time after 22 or before 6"));
     BLE.OFF();
-    
+
     //MODE5 - Seconds match.
     //MODE4 - Minutes and seconds match.
     //SensorAgrv20.sleepAgr("00:00:00:00", RTC_ABSOLUTE, RTC_ALM1_MODE4, SENS_OFF, SENS_AGR_PLUVIOMETER);
@@ -141,12 +151,15 @@ void measureSensors()
   power = PWR.getBatteryLevel();
 
   epoch = RTC.getEpochTime();
+  RTC.getTime();
 
   // Turn off the sensor
   SensorAgrv20.setSensorMode(SENS_OFF, SENS_AGR_ANEMOMETER);
   RTC.OFF();
+}
 
-
+void printData()
+{
   /////////////////////////////////////////////////////
   // 2. USB: Print the weather values through the USB
   /////////////////////////////////////////////////////
@@ -174,9 +187,6 @@ void measureSensors()
   USB.print(anemometer);
   USB.println(F("km/h"));
 
-  // Print the vane value
-  char vane_str[10] = {    
-    0                          };
   USB.print(F("Vane: "));
   switch(SensorAgrv20.vaneDirection)
   {
@@ -325,6 +335,31 @@ void time(unsigned long num, uint8_t out[], int offset, char* message) {
   //  USB.println(p3);
   //  USB.println(p4);
 }
+
+void saveDataToFile() {
+  SD.ON();
+
+  sprintf(filename,"/%02u/%02u",RTC.year, RTC.month);
+  SD.mkdir(filename);
+
+  sprintf(filename,"/%02u/%02u/%02u%02u%02u.TXT",RTC.year, RTC.month, RTC.year, RTC.month, RTC.date);
+  SD.create(filename);
+  USB.print(F("File written: "));
+  USB.println(filename);
+  
+  Utils.float2String (anemometer, anem, 2);
+  Utils.float2String (pluviometer1, plu1, 2);  
+  Utils.float2String (pluviometer2, plu2, 2);
+  Utils.float2String (pluviometer3, plu3, 2);
+
+  sprintf(data, "%s,%s,%s,%s,%s,%u,%lu", vane_str, anem, plu1, plu2, plu3, power, epoch);
+  SD.appendln(filename,data);
+  USB.println(data);
+
+  SD.OFF();
+}
+
+
 
 
 
