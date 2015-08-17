@@ -65,10 +65,10 @@ public class WaspmoteBLEReader {
 		new Handler(receiver.getMainLooper()).postDelayed(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					Thread.sleep(60000);
-				} catch (InterruptedException e) {
-				}
+//				try {
+//					Thread.sleep(60000);
+//				} catch (InterruptedException e) {
+//				}
 				if (running)
 					WaspmoteBLEReader.this.stop(false);
 			}
