@@ -84,7 +84,7 @@ public class COBWEBBLEPlugin extends CordovaPlugin {
 			
 			return true;
 
-		}else if(action.equals(TEST)){
+		}/*else if(action.equals(TEST)){
 			final PluginReceiver pr= new PluginReceiver(callbackContext);
 			new Thread(){
 				public void run(){
@@ -97,7 +97,7 @@ public class COBWEBBLEPlugin extends CordovaPlugin {
 				}
 			}.start();
 			return true;
-		}
+		}*/
 		
 		return false;
 

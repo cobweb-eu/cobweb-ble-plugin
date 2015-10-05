@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.UUID;
+import android.app.Activity;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -46,10 +47,13 @@ public class WaspmoteBLEReader {
 	private Receiver receiver;
 
 	private boolean running;
+	
+	private Activity activity;
 
-	public WaspmoteBLEReader(BluetoothAdapter adapter, Receiver receiver) {
+	public WaspmoteBLEReader(BluetoothAdapter adapter, Receiver receiver, Activity act) {
 		this.adapter = adapter;
 		this.receiver = receiver;
+		activity = act;
 
 		receiver.update("Bluetooth Connected.");
 	}
@@ -62,7 +66,7 @@ public class WaspmoteBLEReader {
 
 		receiver.update("Scanning");
 		running = true;
-		new Handler(receiver.getMainLooper()).postDelayed(new Runnable() {
+		new Handler(activity.getMainLooper()).postDelayed(new Runnable() {
 			@Override
 			public void run() {
 //				try {
@@ -93,7 +97,7 @@ public class WaspmoteBLEReader {
 				byte[] scanRecord) {
 			String address = device.getAddress();
 			// if (address.startsWith("00:07:80:04:FA:35"))
-			device.connectGatt(receiver.getContext(), false, callback_gatt);
+			device.connectGatt(activity, false, callback_gatt);
 		}
 	};
 
@@ -192,9 +196,7 @@ public class WaspmoteBLEReader {
 		void addData(String address, String vane, String plu0, String plu1,
 				String plu2, String anem, String powr, String time);
 
-		Context getContext();
-
-		Looper getMainLooper();
+		
 	}
 
 	protected String getDirection(byte b) {

@@ -47,7 +47,7 @@ public class MainActivity extends Activity implements Receiver, OnClickListener 
 			startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
 		} else {
 			update("Awaiting input");
-			reader = new WaspmoteBLEReader(mBluetoothAdapter, this);
+			reader = new WaspmoteBLEReader(mBluetoothAdapter, this, this);
 			button.setEnabled(true);
 		}
 	}
@@ -64,7 +64,7 @@ public class MainActivity extends Activity implements Receiver, OnClickListener 
 			}
 			update("Awaiting input");
 			// reader = new WaspmoteBLEReader(mBluetoothAdapter, this);
-			reader = new WaspmoteBLEReader(mBluetoothAdapter, this);
+			reader = new WaspmoteBLEReader(mBluetoothAdapter, this, this);
 			button.setEnabled(true);
 		}
 	}
@@ -112,10 +112,7 @@ public class MainActivity extends Activity implements Receiver, OnClickListener 
 		});
 	}
 
-	@Override
-	public Context getContext() {
-		return this;
-	}
+	
 
 	@Override
 	public void onClick(View v) {
